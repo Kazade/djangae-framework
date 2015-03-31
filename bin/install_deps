@@ -43,7 +43,7 @@ def create_third_party_dir():
 
 
 def install_python_deps():
-    targets = [ x[:-4] for x in os.listdir(REQUIREMENTS_DIR) ] # e.g. prod, local etc.
+    targets = [ x[:-4] for x in os.listdir(REQUIREMENTS_DIR) if x.endswith(".txt") ] # e.g. prod, local etc.
 
     # Reorder so that prod is first
     targets.remove("prod")
