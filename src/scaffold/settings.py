@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 """
 
 from djangae.settings_base import * #Set up some AppEngine specific stuff
+from django.core.urlresolvers import reverse_lazy
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
@@ -30,6 +31,7 @@ TEMPLATE_DEBUG = True
 # Application definition
 
 INSTALLED_APPS = (
+    'djangae', # Djangae needs to come before django apps in django 1.7 and above
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,8 +40,9 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'djangosecure',
     'csp',
+    'cspreports',
     'djangae.contrib.gauth',
-    'djangae', # Djangae should be after Django core/contrib things
+    'djangae.contrib.security',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -48,7 +51,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'djangae.contrib.gauth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'csp.middleware.CSPMiddleware',
     'session_csrf.CsrfMiddleware',
     'djangosecure.middleware.SecurityMiddleware',
@@ -65,13 +67,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "session_csrf.context_processor"
 )
 
-def check_session_csrf_enabled():
-    if "session_csrf.CsrfMiddleware" not in MIDDLEWARE_CLASSES:
-        return [ "SESSION_CSRF_DISABLED"]
-
-    return []
-check_session_csrf_enabled.messages = { "SESSION_CSRF_DISABLED" : "Please add 'session_csrf.CsrfMiddleware' to MIDDLEWARE_CLASSES" }
-
 SECURE_CHECKS = [
     "djangosecure.check.sessions.check_session_cookie_secure",
     "djangosecure.check.sessions.check_session_cookie_httponly",
@@ -79,8 +74,15 @@ SECURE_CHECKS = [
     "djangosecure.check.djangosecure.check_sts",
     "djangosecure.check.djangosecure.check_frame_deny",
     "djangosecure.check.djangosecure.check_ssl_redirect",
-    "scaffold.settings.check_session_csrf_enabled"
+    "scaffold.checks.check_session_csrf_enabled",
+    "scaffold.checks.check_csp_is_not_report_only"
 ]
+
+CSP_REPORT_URI = reverse_lazy('report_csp')
+CSP_REPORTS_LOG = True
+CSP_REPORTS_LOG_LEVEL = 'warning'
+CSP_REPORTS_SAVE = True
+CSP_REPORTS_EMAIL_ADMINS = False
 
 ROOT_URLCONF = 'scaffold.urls'
 
@@ -109,6 +111,15 @@ STATIC_URL = '/static/'
 
 if DEBUG:
     CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
+
+# sensible default CPS settings, feel free to modify them
+CSP_DEFAULT_SRC = ("'self'", "*.gstatic.com")
+CSP_STYLE_SRC = ("'self'", "fonts.googleapis.com", "*.gstatic.com")
+CSP_FONT_SRC = ("'self'", "themes.googleusercontent.com", "*.gstatic.com")
+CSP_FRAME_SRC = ("'self'", "www.google.com", "www.youtube.com", "accounts.google.com", "apis.google.com", "plus.google.com")
+CSP_SCRIPT_SRC = ("'self'", "*.googleanalytics.com", "*.google-analytics.com", "ajax.googleapis.com")
+CSP_IMG_SRC = ("'self'", "data:", "s.ytimg.com", "*.googleusercontent.com", "*.gstatic.com")
+CSP_CONNECT_SRC = ("'self'", "plus.google.com", "www.google-analytics.com")
 
 
 from djangae.contrib.gauth.settings import *
