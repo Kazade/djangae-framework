@@ -1,4 +1,4 @@
-application: djangae-scaffold
+application: scaffold
 version: 1
 runtime: python27
 api_version: 1
@@ -6,9 +6,13 @@ threadsafe: true
 
 handlers:
 
-- url: /_ah/(mapreduce|queue|warmup).*
+- url: /_ah/(mapreduce|queue|warmup|start|stop).*
   script: scaffold.wsgi.application
   login: admin
+  secure: always
+
+- url: /_ah/internalupload.*
+  script: scaffold.wsgi.application
   secure: always
 
 - url: /static/admin/
@@ -32,4 +36,5 @@ skip_files:
     - requirements.txt
     - sitepackages/google_appengine*
     - \.storage.*
+    - \.git
     - (.*)\.pyc
